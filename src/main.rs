@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, this is our SCICOMP Project!");
+    println!("Hello, this is our SCICOMP Project, welcome!");
 }

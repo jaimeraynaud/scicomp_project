@@ -1,32 +1,34 @@
+use std::ops::Div;
+
 use nalgebra::{DMatrix, DVector, Vector, MatrixMN, U1, Dynamic, Vector1};
 use nalgebra::linalg::QR;
 use ndarray::{Array2, ArrayView1};
 
 
-fn arnoldi_iteration(matrix: &DMatrix<f64>, v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>) {
-    let mut h = DMatrix::zeros(k + 1, k);
-    let mut v_collection = DMatrix::zeros(matrix.nrows(), k + 1);
+fn arnoldi_iteration(A: &DMatrix<f64>, b: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
+    let eps = 1e-12;
+    let mut h = DMatrix::zeros(n+1, n);
+    let mut Q = DMatrix::zeros(A.nrows(), n+1);
 
-    v_collection.column_mut(0).copy_from(&v);
 
-    for j in 0..k {
-        let mut q = matrix * v_collection.column(j);
+    Q.column_mut(0).copy_from(&b.unscale(b.norm()));
 
-        for i in 0..=j {
-            h[(i, j)] = q.dot(&v_collection.column(i));
-            q -= h[(i, j)] * &v_collection.column(i);
-        }
+    for k in 1..n+1 {
+        let mut v = A * &Q.column(k - 1);  // Generate a new candidate vector
+        for j in 0..k {
+            h[(j, k - 1)] = Q.column(j).conjugate().dot(&v);
+            v = v - h[(j, k - 1)] * Q.column(j);
+        }  // Subtract the projections on previous vectors
+        h[(k, k-1)] = v.norm();
 
-        let norm_q = q.norm();
-
-        if norm_q != 0.0 {
-            v_collection.column_mut(j + 1).copy_from(&(q / norm_q).into_owned());
-        }
-
-        h[(j + 1, j)] = norm_q;
+        if h[(k, k-1)] > eps{
+            Q.set_column(k, &(v / h[(k, k-1)]));
+        } else { // Add the produced vector to the list, unless 
+            return (Q, h);
+        }  // If that happens, stop iterating.
     }
-
-    (v_collection, h)
+            
+    return (Q, h);
 }
 
 
@@ -96,16 +98,16 @@ fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
 
 fn main() {
     // Define your matrix here
-    let a = DMatrix::from_vec(3, 3, vec![1.0, 2.0, 0.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
+    let A = DMatrix::from_vec(3, 3, vec![1.0, 2.0, 0.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
 
     // Set the number of Arnoldi iterations
-    let k = 2; // Seems like the number of iterations give the number of orthonormal columns
+    let n = 2; // Seems like the number of iterations give the number of orthonormal columns
 
     // Choose a random initial vector for Arnoldi algorithm
-    let v0 = DVector::from_vec(vec![1.0, 1.0, 1.0]);
+    let b = DVector::from_vec(vec![1.0, 1.0, 1.0]);
 
     // Arnoldi iteration
-    let (v_collection, h) = arnoldi_iteration(&a, v0, k);
+    let (v_collection, h) = arnoldi_iteration(&A, b, n);
 
     println!("Arnoldi Iteration:");
     println!("V:\n{:?}", v_collection);

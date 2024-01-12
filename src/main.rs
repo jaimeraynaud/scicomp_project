@@ -1,5 +1,7 @@
-use nalgebra::{DMatrix, DVector, Vector, MatrixMN, U1, Dynamic};
+use nalgebra::{DMatrix, DVector, Vector, MatrixMN, U1, Dynamic, Vector1};
 use nalgebra::linalg::QR;
+use ndarray::{Array2, ArrayView1};
+
 
 fn arnoldi_iteration(matrix: &DMatrix<f64>, v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let mut h = DMatrix::zeros(k + 1, k);
@@ -9,15 +11,19 @@ fn arnoldi_iteration(matrix: &DMatrix<f64>, v: DVector<f64>, k: usize) -> (DMatr
 
     for j in 0..k {
         let mut q = matrix * v_collection.column(j);
+
         for i in 0..=j {
             h[(i, j)] = q.dot(&v_collection.column(i));
             q -= h[(i, j)] * &v_collection.column(i);
         }
-        h[(j + 1, j)] = q.norm();
-        if h[(j + 1, j)] != 0.0 {
-            v_collection.column_mut(j + 1).copy_from(&(q / h[(j + 1, j)]).into_owned());
 
+        let norm_q = q.norm();
+
+        if norm_q != 0.0 {
+            v_collection.column_mut(j + 1).copy_from(&(q / norm_q).into_owned());
         }
+
+        h[(j + 1, j)] = norm_q;
     }
 
     (v_collection, h)
@@ -93,7 +99,7 @@ fn main() {
     let a = DMatrix::from_vec(3, 3, vec![1.0, 2.0, 0.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
 
     // Set the number of Arnoldi iterations
-    let k = 1; // Seems like the number of iterations give the number of orthonormal columns
+    let k = 2; // Seems like the number of iterations give the number of orthonormal columns
 
     // Choose a random initial vector for Arnoldi algorithm
     let v0 = DVector::from_vec(vec![1.0, 1.0, 1.0]);

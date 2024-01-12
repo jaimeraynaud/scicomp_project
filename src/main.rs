@@ -87,12 +87,13 @@ fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
     true
 }
 
+
 fn main() {
     // Define your matrix here
     let a = DMatrix::from_vec(3, 3, vec![1.0, 2.0, 0.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
 
     // Set the number of Arnoldi iterations
-    let k = 10;
+    let k = 1; // Seems like the number of iterations give the number of orthonormal columns
 
     // Choose a random initial vector for Arnoldi algorithm
     let v0 = DVector::from_vec(vec![1.0, 1.0, 1.0]);
@@ -104,32 +105,40 @@ fn main() {
     println!("V:\n{:?}", v_collection);
     println!("H:\n{:?}", h);
 
-    // Classical Gram-Schmidt
-    let q_classical = classical_gram_schmidt(&a);
+    let is_orthonormal = are_columns_orthonormal(&v_collection);
 
-    println!("\nClassical Gram-Schmidt:");
-    println!("Q:\n{:?}", q_classical);
-
-    let is_orthonormal_class = are_columns_orthonormal(&q_classical);
-
-    if is_orthonormal_class {
+    if is_orthonormal {
         println!("The columns are orthonormal.");
     } else {
         println!("The columns are not orthonormal.");
     }
 
-    // Modified Gram-Schmidt
-    let q_modified = modified_gram_schmidt(&a);
+    // // Classical Gram-Schmidt
+    // let q_classical = classical_gram_schmidt(&a);
 
-    println!("\nModified Gram-Schmidt:");
-    println!("Q:\n{:?}", q_modified);
+    // println!("\nClassical Gram-Schmidt:");
+    // println!("Q:\n{:?}", q_classical);
 
-    let is_orthonormal_mod = are_columns_orthonormal(&q_modified);
+    // let is_orthonormal_class = are_columns_orthonormal(&q_classical);
 
-    if is_orthonormal_mod {
-        println!("The columns are orthonormal.");
-    } else {
-        println!("The columns are not orthonormal.");
-    }
+    // if is_orthonormal_class {
+    //     println!("The columns are orthonormal.");
+    // } else {
+    //     println!("The columns are not orthonormal.");
+    // }
+
+    // // Modified Gram-Schmidt
+    // let q_modified = modified_gram_schmidt(&a);
+
+    // println!("\nModified Gram-Schmidt:");
+    // println!("Q:\n{:?}", q_modified);
+
+    // let is_orthonormal_mod = are_columns_orthonormal(&q_modified);
+
+    // if is_orthonormal_mod {
+    //     println!("The columns are orthonormal.");
+    // } else {
+    //     println!("The columns are not orthonormal.");
+    // }
     
 }

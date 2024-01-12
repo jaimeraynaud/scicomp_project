@@ -5,68 +5,56 @@ use nalgebra::linalg::QR;
 use ndarray::{Array2, ArrayView1};
 
 
-fn arnoldi_iteration(A: &DMatrix<f64>, b: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
+fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let eps = 1e-12;
-    let mut h = DMatrix::zeros(n+1, n);
-    let mut Q = DMatrix::zeros(A.nrows(), n+1);
+    let mut H = DMatrix::zeros(n+1, n);
+    let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
 
 
-    Q.column_mut(0).copy_from(&b.unscale(b.norm()));
+    V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
 
     for k in 1..n+1 {
-        let mut v = A * &Q.column(k - 1);  // Generate a new candidate vector
-        for j in 0..k {
-            h[(j, k - 1)] = Q.column(j).conjugate().dot(&v);
-            v = v - h[(j, k - 1)] * Q.column(j);
+        let mut v_ = A * &V.column(k - 1);  // Generate a new candidate vector
+        for i in 0..k {
+            H[(i, k - 1)] = (A * &V.column(k - 1)).conjugate().dot(&V.column(i));
+            v_ = v_ - H[(i, k - 1)]*&V.column(i);
         }  // Subtract the projections on previous vectors
-        h[(k, k-1)] = v.norm();
+        H[(k, k-1)] = v_.norm();
 
-        if h[(k, k-1)] > eps{
-            Q.set_column(k, &(v / h[(k, k-1)]));
+        if H[(k, k-1)] > eps{
+            V.set_column(k, &(v_ / H[(k, k-1)]));
         } else { // Add the produced vector to the list, unless 
-            return (Q, h);
+            return (V, H);
         }  // If that happens, stop iterating.
     }
             
-    return (Q, h);
+    return (V, H);
 }
 
+fn arnoldi_mg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
+    let eps = 1e-12;
+    let mut H = DMatrix::zeros(n+1, n);
+    let mut V = DMatrix::zeros(A.nrows(), n+1);
 
-fn classical_gram_schmidt(matrix: &DMatrix<f64>) -> DMatrix<f64> {
-    let mut q = DMatrix::zeros(matrix.nrows(), matrix.ncols());
 
-    for j in 0..matrix.ncols() {
-        let mut v = matrix.column(j).clone_owned();
-        for i in 0..j {
-            let r = q.column(i).dot(&v) / q.column(i).dot(&q.column(i));
-            v -= r * &q.column(i);
-        }
-        q.set_column(j, &v.normalize());
+    V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
+
+    for k in 1..n+1 {
+        let mut v_ = A * &V.column(k - 1);  // Generate a new candidate vector
+        for j in 0..k {
+            H[(j, k - 1)] = V.column(j).conjugate().dot(&v_);
+            v_ = v_ - H[(j, k - 1)] * V.column(j);
+        }  // Subtract the projections on previous vectors
+        H[(k, k-1)] = v_.norm();
+
+        if H[(k, k-1)] > eps{
+            V.set_column(k, &(v_ / H[(k, k-1)]));
+        } else { // Add the produced vector to the list, unless 
+            return (V, H);
+        }  // If that happens, stop iterating.
     }
-
-    q
-}
-
-fn modified_gram_schmidt(matrix: &DMatrix<f64>) -> DMatrix<f64> {
-    let mut q = DMatrix::zeros(matrix.nrows(), matrix.ncols());
-
-    for j in 0..matrix.ncols() {
-        let mut v = matrix.column(j).clone_owned();
-        for i in 0..j {
-            let r = q.column(i).dot(&v);
-            v -= r * &q.column(i);
-        }
-
-        // Use nalgebra's QR decomposition to normalize the vector
-        let norm = Vector::norm(&v);
-        if norm.abs() > 1e-10 {
-            q.set_column(j, &(v / norm));
-        } else {
-            q.set_column(j, &v);
-        }
-    }
-
-    q
+            
+    return (V, H);
 }
 
 fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
@@ -95,25 +83,25 @@ fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
     true
 }
 
-
 fn main() {
-    // Define your matrix here
-    let A = DMatrix::from_vec(3, 3, vec![1.0, 2.0, 0.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
-
     // Set the number of Arnoldi iterations
-    let n = 2; // Seems like the number of iterations give the number of orthonormal columns
+    let n = 50; // The number of iterations give the number of orthonormal columns
+    let k = 45; // Grade of the vector b
+
+    // Define your matrix here
+    let A = DMatrix::new_random(n, n);
 
     // Choose a random initial vector for Arnoldi algorithm
-    let b = DVector::from_vec(vec![1.0, 1.0, 1.0]);
+    let mut r0 = DVector::new_random(n);
 
-    // Arnoldi iteration
-    let (v_collection, h) = arnoldi_iteration(&A, b, n);
+    // Arnoldi iteration Classical GS
+    let (V, H) = arnoldi_cg_iteration(&A, r0.clone(), k);
 
-    println!("Arnoldi Iteration:");
-    println!("V:\n{:?}", v_collection);
-    println!("H:\n{:?}", h);
+    println!("Arnoldi Iteration using Classical GS:");
+    // println!("V:\n{:?}", V);
+    // println!("H:\n{:?}", H);
 
-    let is_orthonormal = are_columns_orthonormal(&v_collection);
+    let is_orthonormal = are_columns_orthonormal(&V);
 
     if is_orthonormal {
         println!("The columns are orthonormal.");
@@ -121,32 +109,19 @@ fn main() {
         println!("The columns are not orthonormal.");
     }
 
-    // // Classical Gram-Schmidt
-    // let q_classical = classical_gram_schmidt(&a);
+    // Arnoldi iteration Modified GS
+    let (V, H) = arnoldi_mg_iteration(&A, r0.clone(), k);
 
-    // println!("\nClassical Gram-Schmidt:");
-    // println!("Q:\n{:?}", q_classical);
+    println!("Arnoldi Iteration using Modified GS:");
+    // println!("V:\n{:?}", V);
+    // println!("H:\n{:?}", H);
 
-    // let is_orthonormal_class = are_columns_orthonormal(&q_classical);
+    let is_orthonormal = are_columns_orthonormal(&V);
 
-    // if is_orthonormal_class {
-    //     println!("The columns are orthonormal.");
-    // } else {
-    //     println!("The columns are not orthonormal.");
-    // }
-
-    // // Modified Gram-Schmidt
-    // let q_modified = modified_gram_schmidt(&a);
-
-    // println!("\nModified Gram-Schmidt:");
-    // println!("Q:\n{:?}", q_modified);
-
-    // let is_orthonormal_mod = are_columns_orthonormal(&q_modified);
-
-    // if is_orthonormal_mod {
-    //     println!("The columns are orthonormal.");
-    // } else {
-    //     println!("The columns are not orthonormal.");
-    // }
+    if is_orthonormal {
+        println!("The columns are orthonormal.");
+    } else {
+        println!("The columns are not orthonormal.");
+    }
     
 }

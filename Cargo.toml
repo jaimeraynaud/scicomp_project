@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 nalgebra = { version = "0.32.3", features = ["rand"] }
-ndarray = "0.15.4"
+ndarray-rand = "0.14.0"
+gramschmidt = "0.6.0"
+ndarray = "0.15.6"

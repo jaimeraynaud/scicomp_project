@@ -1,9 +1,4 @@
-use std::ops::Div;
-
-use nalgebra::{DMatrix, DVector, Vector, MatrixMN, U1, Dynamic, Vector1};
-use nalgebra::linalg::QR;
-use ndarray::{Array2, ArrayView1};
-
+use nalgebra::{DMatrix, DVector, Vector};
 
 fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let eps = 1e-12;
@@ -92,12 +87,12 @@ fn main() {
     let A = DMatrix::new_random(n, n);
 
     // Choose a random initial vector for Arnoldi algorithm
-    let mut r0 = DVector::new_random(n);
+    let r0 = DVector::new_random(n);
 
     // Arnoldi iteration Classical GS
     let (V, H) = arnoldi_cg_iteration(&A, r0.clone(), k);
 
-    println!("Arnoldi Iteration using Classical GS:");
+    println!("\nArnoldi Iteration using Classical GS:");
     // println!("V:\n{:?}", V);
     // println!("H:\n{:?}", H);
 
@@ -112,7 +107,7 @@ fn main() {
     // Arnoldi iteration Modified GS
     let (V, H) = arnoldi_mg_iteration(&A, r0.clone(), k);
 
-    println!("Arnoldi Iteration using Modified GS:");
+    println!("\nArnoldi Iteration using Modified GS:");
     // println!("V:\n{:?}", V);
     // println!("H:\n{:?}", H);
 

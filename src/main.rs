@@ -1,8 +1,36 @@
 use nalgebra::{DMatrix, DVector, Vector, U1};
-use plotters::prelude::*;
-use gnuplot::{Figure, Caption, Color, AxesCommon, Fix};
+use std::io::prelude::*;
+use std::path::Path;
+use std::fs::File;
+use csv::WriterBuilder;
+use std::error::Error;
+use std::time::{Duration, Instant};
 
+fn gs_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
+    let eps = 1e-12;
+    let mut R = DMatrix::zeros(n+1, n);
+    let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
 
+    //R[(0, 0)] = &r0.unscale(r0.norm());
+    V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
+
+    for k in 1..n+1 {
+        let mut v_ = A.pow((k-1).try_into().unwrap()) * &V.column(0);  // Generate a new candidate vector
+        for i in 0..k {
+            R[(i, k)] = (A.pow((k-1).try_into().unwrap()) * &V.column(0)).conjugate().dot(&V.column(i));
+            v_ = v_ - R[(i, k)]*&V.column(i);
+        }  // Subtract the projections on previous vectors
+        R[(k, k)] = v_.norm();
+
+        if R[(k, k)] > eps{
+            V.set_column(k, &(v_ / R[(k, k)]));
+        } else { // Add the produced vector to the list, unless 
+            return (V, R);
+        }  // If that happens, stop iterating.
+    }
+            
+    return (V, R);
+}
 
 fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let eps = 1e-12;
@@ -88,33 +116,96 @@ fn orthogonality_loss(V: &DMatrix<f64>) -> f64 {
     return (I-T).norm()
 }
 
-fn visualize(k: Vec<usize>, values1: Vec<f64>, values2: Vec<f64>) -> Result<(), Box<dyn std::error::Error>> {
-    // Calculate the y-axis range based on the minimum and maximum values of values1 and values2
-    let min_y = values1.iter().copied().chain(values2.iter().copied()).fold(f64::INFINITY, f64::min);
-    let max_y = values1.iter().copied().chain(values2.iter().copied()).fold(f64::NEG_INFINITY, f64::max);
+fn write_matrix_to_csv(matrix: &DMatrix<f64>, filename: &str) -> Result<(), std::io::Error> {
+    let file_path = Path::new(filename);
+    let mut file = File::create(file_path)?;
 
-    // Create a new figure
-    let mut fg = Figure::new();
+    for i in 0..matrix.nrows() {
+        for j in 0..matrix.ncols() {
+            let value = matrix[(i, j)];
+            write!(file, "{},", value)?;
+        }
+        writeln!(file, "")?;
+    }
 
-    // Plot values1
-    fg.axes2d()
-        .lines(k.iter(), values1.iter(), &[Caption("Values 1"), Color("red")])
-        .set_y_range(Fix(min_y), Fix(max_y));
-
-    // Plot values2
-    fg.axes2d()
-        .lines(k.iter(), values2.iter(), &[Caption("Values 2"), Color("blue")])
-        .set_y_range(Fix(min_y), Fix(max_y));
-
-    // Set x-axis label
-    fg.axes2d().set_x_label("k", &[]);
-
-    // Display the plot
-    fg.show()?;
     Ok(())
 }
 
-fn main() {
+fn write_matrices_to_csv(V_gs: &DMatrix<f64>, R_gs: &DMatrix<f64>, V_cgs: &DMatrix<f64>, H_cgs: &DMatrix<f64>, V_mgs: &DMatrix<f64>, H_mgs: &DMatrix<f64>, k: usize) -> Result<(), std::io::Error> {
+    
+    write_matrix_to_csv(V_gs, &format!("../python_project/gs/V/V_gs_{}.csv", k))?;
+    write_matrix_to_csv(R_gs, &format!("../python_project/gs/R/R_gs_{}.csv", k))?;
+    write_matrix_to_csv(V_cgs, &format!("../python_project/cgs/V/V_cgs_{}.csv", k))?;
+    write_matrix_to_csv(H_cgs, &format!("../python_project/cgs/H/H_cgs_{}.csv", k))?;
+    write_matrix_to_csv(V_mgs, &format!("../python_project/mgs/V/V_mgs_{}.csv", k))?;
+    write_matrix_to_csv(H_mgs, &format!("../python_project/mgs/H/H_mgs_{}.csv", k))?;
+
+    Ok(())
+}
+
+fn write_vector_to_csv(data: &Vec<f64>, file_path: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::create(file_path)?;
+    let mut writer = WriterBuilder::new().from_writer(file);
+
+    for value in data {
+        writer.write_record(&[value.to_string()])?;
+    }
+
+    writer.flush()?;
+    Ok(())
+}
+
+fn write_orthogonality_vectors_to_csv(orthogonality_loss_gs_vec: &Vec<f64>, orthogonality_loss_cgs_vec: &Vec<f64>, orthogonality_loss_mgs_vec: &Vec<f64>) -> Result<(), std::io::Error> {
+    write_vector_to_csv(orthogonality_loss_gs_vec, "../python_project/gs/orthogonality_loss_gs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_cgs_vec, "../python_project/cgs/orthogonality_loss_cgs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_mgs_vec, "../python_project/mgs/orthogonality_loss_mgs_vec.csv");
+    Ok(())
+}
+
+
+fn measure_avg_execution_time<F>(f: F) -> Duration
+where
+    F: Fn() -> (),
+{
+    let num_iterations = 100; // Change here to modify the number of iterations to average the results.
+    let mut total_duration = Duration::from_secs(0);
+
+    for _ in 0..num_iterations {
+        let start_time = Instant::now();
+        f();
+        let end_time = Instant::now();
+        total_duration += end_time - start_time;
+    }
+    let averaged_duration = total_duration / num_iterations as u32;
+    println!("{:?}", averaged_duration);
+    return averaged_duration
+}
+
+fn compute_time(A: &DMatrix<f64>, r0: DVector<f64>, k_max: usize){
+    let mut time_gs_vec: Vec<f64> = Vec::new();
+    let mut time_cgs_vec: Vec<f64> = Vec::new();
+    let mut time_mgs_vec: Vec<f64> = Vec::new();
+
+    let k_vector: Vec<usize> = (2..=k_max).collect(); // k = Grade of the vector b
+
+    for k in &k_vector{
+        let averaged_time_gs = measure_avg_execution_time(|| {gs_iteration(&A, r0.clone(), *k);});
+        time_gs_vec.push(averaged_time_gs.as_secs_f64());
+
+        let averaged_time_cgs = measure_avg_execution_time(|| {arnoldi_cg_iteration(&A, r0.clone(), *k);});
+        time_cgs_vec.push(averaged_time_cgs.as_secs_f64());
+
+        let averaged_time_mgs = measure_avg_execution_time(|| {arnoldi_mg_iteration(&A, r0.clone(), *k);});
+        time_mgs_vec.push(averaged_time_mgs.as_secs_f64());
+    }
+
+    write_vector_to_csv(&time_gs_vec, "../python_project/gs/time_gs_vec.csv");
+    write_vector_to_csv(&time_cgs_vec, "../python_project/cgs/time_cgs_vec.csv");
+    write_vector_to_csv(&time_mgs_vec, "../python_project/mgs/time_mgs_vec.csv");
+
+}
+
+fn orchestrator() {
     // Set the number of Arnoldi iterations
     let n = 50; // The number of iterations give the number of orthonormal columns
 
@@ -124,52 +215,53 @@ fn main() {
     // Choose a random initial vector for Arnoldi algorithm
     let r0 = DVector::new_random(n);
 
-    let k_vector: Vec<usize> = (2..=10).collect(); // k = Grade of the vector b
+    let k_max = 45;
 
+    let k_vector: Vec<usize> = (2..=k_max).collect(); // k = Grade of the vector b
+
+    let mut orthogonality_loss_gs_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_cgs_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_mgs_vec: Vec<f64> = Vec::new();
 
     for k in &k_vector{
 
+        // GS iteration
+        let (V_gs, R_gs) = gs_iteration(&A, r0.clone(), *k);
+        orthogonality_loss_gs_vec.push(orthogonality_loss(&V_gs));
+
         // Arnoldi iteration Classical GS
         let (V_cgs, H_cgs) = arnoldi_cg_iteration(&A, r0.clone(), *k);
-
-        // println!("\nArnoldi Iteration using Classical GS:");
-
-        // let is_orthonormal = are_columns_orthonormal(&V);
-
-        // if is_orthonormal {
-        //     println!("The columns are orthonormal.");
-        // } else {
-        //     println!("The columns are not orthonormal.");
-        // }
-        
         orthogonality_loss_cgs_vec.push(orthogonality_loss(&V_cgs));
 
         // Arnoldi iteration Modified GS
         let (V_mgs, H_mgs) = arnoldi_mg_iteration(&A, r0.clone(), *k);
-
-        // println!("\nArnoldi Iteration using Modified GS:");
-
-        // let is_orthonormal = are_columns_orthonormal(&V);
-
-        // if is_orthonormal {
-        //     println!("The columns are orthonormal.");
-        // } else {
-        //     println!("The columns are not orthonormal.");
-        // }
-
         orthogonality_loss_mgs_vec.push(orthogonality_loss(&V_mgs));
+        
+        // Write orthogonality loss and time vectors to csv
+        write_orthogonality_vectors_to_csv(&orthogonality_loss_gs_vec, &orthogonality_loss_cgs_vec, &orthogonality_loss_mgs_vec);
+
+        // Write matrices to CSV files
+        write_matrices_to_csv(&V_gs, &R_gs, &V_cgs, &H_cgs, &V_mgs, &H_mgs, *k);
+
+        println!("Are GS columns for {} orthonormal? {:?}", k, are_columns_orthonormal(&V_gs));
 
     } // End of k loop
-    println!("\nArnoldi Iteration using Classical GS:");
-    println!("{:?}", orthogonality_loss_cgs_vec);
 
-    println!("\nArnoldi Iteration using Modified GS:");
+    println!("\nk: {}", k_max);
+    println!("\nn: {}", n);
+    println!("\nArnoldi Iteration using Classical GS orthogonality loss:");
+    println!("{:?}", orthogonality_loss_cgs_vec.clone());
+
+    println!("\nArnoldi Iteration using Modified GS orthogonality loss:");
     println!("{:?}", orthogonality_loss_mgs_vec);
-    
-    // Call the visualize function
-    if let Err(err) = visualize(k_vector, orthogonality_loss_cgs_vec, orthogonality_loss_mgs_vec) {
-        eprintln!("Error: {}", err);
-    }
+
+    // Compute and write averaged execution time: CAUTION! Long execution time
+    // compute_time(&A, r0, k_max);
+
+}
+
+
+
+fn main() {
+    orchestrator()
 }

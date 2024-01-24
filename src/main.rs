@@ -8,28 +8,29 @@ use std::time::{Duration, Instant};
 
 fn gs_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let eps = 1e-12;
-    let mut R = DMatrix::zeros(n+1, n);
+    let mut H: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(n+1, n);
     let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
 
-    //R[(0, 0)] = &r0.unscale(r0.norm());
-    V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
+   
+    H[(0, 0)] = r0.norm();
+    V.column_mut(0).copy_from(&r0.unscale(H[(0, 0)]));
 
     for k in 1..n+1 {
-        let mut v_ = A.pow((k-1).try_into().unwrap()) * &V.column(0);  // Generate a new candidate vector
+        let mut v_ = A.pow(k.try_into().unwrap()) * &r0;  // A^k*r0
         for i in 0..k {
-            R[(i, k)] = (A.pow((k-1).try_into().unwrap()) * &V.column(0)).conjugate().dot(&V.column(i));
-            v_ = v_ - R[(i, k)]*&V.column(i);
+            H[(i, k-1)] = (A.pow(k.try_into().unwrap()) * &r0).conjugate().dot(&V.column(i));
+            v_ = v_ - H[(i, k)]*&V.column(i);
         }  // Subtract the projections on previous vectors
-        R[(k, k)] = v_.norm();
+        H[(k, k)] = v_.norm();
 
-        if R[(k, k)] > eps{
-            V.set_column(k, &(v_ / R[(k, k)]));
+        if H[(k, k-1)] > eps{
+            V.set_column(k, &(v_ / H[(k, k-1)]));
         } else { // Add the produced vector to the list, unless 
-            return (V, R);
+            return (V, H);
         }  // If that happens, stop iterating.
     }
             
-    return (V, R);
+    return (V, H);
 }
 
 fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {

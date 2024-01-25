@@ -62,7 +62,7 @@ fn arnoldi_mg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatri
     V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
 
     for k in 1..n+1 {
-        let mut v_ = A * &V.column(k - 1);  // Generate a new candidate vector
+        let mut v_: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Const<1>, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Const<1>>> = A * &V.column(k - 1);  // Generate a new candidate vector
         for j in 0..k {
             H[(j, k - 1)] = V.column(j).conjugate().dot(&v_);
             v_ = v_ - H[(j, k - 1)] * V.column(j);
@@ -78,6 +78,31 @@ fn arnoldi_mg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatri
             
     return (V, H);
 }
+
+fn lanczos(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
+    let eps = 1e-12;
+    let mut T = DMatrix::zeros(n+1, n);
+    let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
+    let beta: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Const<1>, nalgebra::VecStorage<_, nalgebra::Dyn, nalgebra::Const<1>>> = DVector::zeros(n);
+    
+    V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
+    
+    for k in 1..n+1 {
+        let mut u = A*V.column(k);
+        if k!=1 {
+            let mut u = A*V.column(k) - T[(k,k-1)]*V.column(k-1);
+        }
+        T[(k,k)] = V.column(k).transpose()*u;
+        let mut vhat = u - T[(k,k)]*V.column(k);
+        if k != n{
+            T[(k,k)] = T[(k+1,k)]
+        }
+        V.set_column(k+1, &(vhat / T[(k+1,k)]));
+    }
+            
+    return (V, T);
+}
+
 
 fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
     let num_columns = matrix.ncols();

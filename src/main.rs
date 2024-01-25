@@ -6,30 +6,24 @@ use csv::WriterBuilder;
 use std::error::Error;
 use std::time::{Duration, Instant};
 
-fn gs_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
-    let eps = 1e-12;
-    let mut H: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(n+1, n);
-    let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
-
-   
-    H[(0, 0)] = r0.norm();
-    V.column_mut(0).copy_from(&r0.unscale(H[(0, 0)]));
-
-    for k in 1..n+1 {
-        let mut v_ = A.pow(k.try_into().unwrap()) * &r0;  // A^k*r0
-        for i in 0..k {
-            H[(i, k-1)] = (A.pow(k.try_into().unwrap()) * &r0).conjugate().dot(&V.column(i));
-            v_ = v_ - H[(i, k)]*&V.column(i);
-        }  // Subtract the projections on previous vectors
-        H[(k, k)] = v_.norm();
-
-        if H[(k, k-1)] > eps{
-            V.set_column(k, &(v_ / H[(k, k-1)]));
-        } else { // Add the produced vector to the list, unless 
-            return (V, H);
-        }  // If that happens, stop iterating.
-    }
+fn gs_iteration(A: &DMatrix<f64>, mut v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>){
+    let n = A.ncols();
+    
+    let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(n, k+1);
+    V.column_mut(0).copy_from(&v.unscale(v.norm()));
+ 
+    let mut H: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(k+1, k); 
+    for j in 1..k+1 {
+        v = A*v;
+        let mut vtilde = v.clone();
+        for i in 0..j {
+            H[(i,j-1)] = V.column(i).conjugate().dot(&v);
+            vtilde = vtilde - H[(i,j-1)]*&V.column(i);
+        }
             
+        H[(j-1,j-1)] = vtilde.norm();
+        V.set_column(j, &(vtilde/H[(j-1,j-1)]));
+    }
     return (V, H);
 }
 
@@ -186,6 +180,7 @@ fn compute_time(A: &DMatrix<f64>, r0: DVector<f64>, k_max: usize){
     let mut time_gs_vec: Vec<f64> = Vec::new();
     let mut time_cgs_vec: Vec<f64> = Vec::new();
     let mut time_mgs_vec: Vec<f64> = Vec::new();
+    
 
     let k_vector: Vec<usize> = (2..=k_max).collect(); // k = Grade of the vector b
 
@@ -244,12 +239,15 @@ fn orchestrator() {
         // Write matrices to CSV files
         write_matrices_to_csv(&V_gs, &R_gs, &V_cgs, &H_cgs, &V_mgs, &H_mgs, *k);
 
-        println!("Are GS columns for {} orthonormal? {:?}", k, are_columns_orthonormal(&V_gs));
+        //println!("Are GS columns for {} orthonormal? {:?}", k, are_columns_orthonormal(&V_gs));
 
     } // End of k loop
 
     println!("\nk: {}", k_max);
     println!("\nn: {}", n);
+    println!("\nGS iteration orthogonality loss:");
+    println!("{:?}", orthogonality_loss_gs_vec.clone());
+
     println!("\nArnoldi Iteration using Classical GS orthogonality loss:");
     println!("{:?}", orthogonality_loss_cgs_vec.clone());
 
@@ -257,7 +255,7 @@ fn orchestrator() {
     println!("{:?}", orthogonality_loss_mgs_vec);
 
     // Compute and write averaged execution time: CAUTION! Long execution time
-    // compute_time(&A, r0, k_max);
+    compute_time(&A, r0, k_max);
 
 }
 

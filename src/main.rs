@@ -42,12 +42,7 @@ fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatri
             v_ = v_ - H[(i, k - 1)]*&V.column(i);
         }  // Subtract the projections on previous vectors
         H[(k, k-1)] = v_.norm();
-
-        if H[(k, k-1)] > eps{
-            V.set_column(k, &(v_ / H[(k, k-1)]));
-        } else { // Add the produced vector to the list, unless 
-            return (V, H);
-        }  // If that happens, stop iterating.
+        V.set_column(k, &(v_ / H[(k, k-1)]));
     }
             
     return (V, H);
@@ -68,12 +63,7 @@ fn arnoldi_mg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatri
             v_ = v_ - H[(j, k - 1)] * V.column(j);
         }  // Subtract the projections on previous vectors
         H[(k, k-1)] = v_.norm();
-
-        if H[(k, k-1)] > eps{
-            V.set_column(k, &(v_ / H[(k, k-1)]));
-        } else { // Add the produced vector to the list, unless 
-            return (V, H);
-        }  // If that happens, stop iterating.
+        V.set_column(k, &(v_ / H[(k, k-1)]));
     }
             
     return (V, H);
@@ -93,50 +83,19 @@ fn lanczos_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f
         if k!=1{
             u = A * &V.column(k - 1) - &V.column(k - 2).scale(H[(k-1, k-2)])
         }
-        H[(k-1, k-1)] = *(&V.column(k - 1).transpose()*&u).get((0, 0)).unwrap();
+        H[(k-1, k-1)] = *(&V.column(k - 1).transpose()*&u).get((0, 0)).unwrap(); // Diagonal elements
         let mut vhat = u-&V.column(k - 1).scale(H[(k-1, k-1)]);
 
-        H[(k, k-1)] = vhat.norm();
+        H[(k, k-1)] = vhat.norm(); // Subdiagonal elements 1,0 2,1 3,2...
 
-        // if k-1!=n+1{
-        //     println!("k = {:?}", k);
-        //     H[(k-1, k)] = H[(k, k-1)]
-        // }
-        // V.column_mut(k).copy_from(&(vhat/H[(k, k-1)]));
-
-        if H[(k, k-1)] > eps{
-            V.set_column(k, &(vhat/H[(k, k-1)]));
-        } else { // Add the produced vector to the list, unless 
-            return (V, H);
-        }  // If that happens, stop iterating.
+        if k!=n{
+            H[(k-1, k)] = H[(k, k-1)]
+        }
+        V.set_column(k, &(vhat/H[(k, k-1)]));
     }
             
     return (V, H);
 }
-
-// fn lanczos_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
-//     let eps = 1e-12;
-//     let mut T: DMatrix<f64> = DMatrix::zeros(n + 1, n);
-//     let mut V: DMatrix<f64> = DMatrix::zeros(A.nrows(), n + 1);
-//     let beta: DVector<f64> = DVector::zeros(n);
-
-//     V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
-
-//     for k in 0..n-1 {
-//         let mut u: DVector<f64> = A * &V.column(k);
-//         if k != 0 {
-//             u = A * &V.column(k) - &V.column(k - 1).scale(T[(k, k - 1)]);
-//         }
-//         T[(k, k)] = *(V.column(k).transpose() * &u).get((0, 0)).unwrap();
-//         let mut vhat: DVector<f64> = u - &V.column(k).scale(T[(k, k)]);
-//         if k != n {
-//             T[(k, k+1)] = T[(k + 1, k)];
-//         }
-//         V.set_column(k + 1, &(vhat / T[(k+1 , k)]));
-//     }
-
-//     (V, T)
-// }
 
 fn are_columns_orthonormal(matrix: &DMatrix<f64>) -> bool {
     let num_columns = matrix.ncols();
@@ -210,10 +169,11 @@ fn write_vector_to_csv(data: &Vec<f64>, file_path: &str) -> Result<(), Box<dyn E
     Ok(())
 }
 
-fn write_orthogonality_vectors_to_csv(orthogonality_loss_gs_vec: &Vec<f64>, orthogonality_loss_cgs_vec: &Vec<f64>, orthogonality_loss_mgs_vec: &Vec<f64>, orthogonality_loss_lanczos_vec: &Vec<f64>) -> Result<(), std::io::Error> {
+fn write_orthogonality_vectors_to_csv(orthogonality_loss_gs_vec: &Vec<f64>, orthogonality_loss_cgs_vec: &Vec<f64>, orthogonality_loss_mgs_vec: &Vec<f64>, orthogonality_loss_mgs_H_vec: &Vec<f64>, orthogonality_loss_lanczos_vec: &Vec<f64>) -> Result<(), std::io::Error> {
     write_vector_to_csv(orthogonality_loss_gs_vec, "../python_project/gs/orthogonality_loss_gs_vec.csv");
     write_vector_to_csv(orthogonality_loss_cgs_vec, "../python_project/cgs/orthogonality_loss_cgs_vec.csv");
     write_vector_to_csv(orthogonality_loss_mgs_vec, "../python_project/mgs/orthogonality_loss_mgs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_mgs_H_vec, "../python_project/mgs/orthogonality_loss_mgs_H_vec.csv");
     write_vector_to_csv(orthogonality_loss_lanczos_vec, "../python_project/lanczos/orthogonality_loss_lanczos_vec.csv");
     Ok(())
 }
@@ -237,10 +197,11 @@ where
     return averaged_duration
 }
 
-fn compute_time(A: &DMatrix<f64>, r0: DVector<f64>, k_max: usize){
+fn compute_time(A: &DMatrix<f64>, A_H: &DMatrix<f64>, r0: DVector<f64>, k_max: usize){
     let mut time_gs_vec: Vec<f64> = Vec::new();
     let mut time_cgs_vec: Vec<f64> = Vec::new();
     let mut time_mgs_vec: Vec<f64> = Vec::new();
+    let mut time_mgs_H_vec: Vec<f64> = Vec::new();
     let mut time_lanczos_vec: Vec<f64> = Vec::new();
     
 
@@ -256,34 +217,42 @@ fn compute_time(A: &DMatrix<f64>, r0: DVector<f64>, k_max: usize){
         let averaged_time_mgs = measure_avg_execution_time(|| {arnoldi_mg_iteration(&A, r0.clone(), *k);});
         time_mgs_vec.push(averaged_time_mgs.as_secs_f64());
 
-        let averaged_time_lanczos = measure_avg_execution_time(|| {lanczos_iteration(&A, r0.clone(), *k);});
+        let averaged_time_mgs_H = measure_avg_execution_time(|| {arnoldi_mg_iteration(&A_H, r0.clone(), *k);});
+        time_mgs_H_vec.push(averaged_time_mgs_H.as_secs_f64());
+
+        let averaged_time_lanczos = measure_avg_execution_time(|| {lanczos_iteration(&A_H, r0.clone(), *k);});
         time_lanczos_vec.push(averaged_time_lanczos.as_secs_f64());
     }
 
     write_vector_to_csv(&time_gs_vec, "../python_project/gs/time_gs_vec.csv");
     write_vector_to_csv(&time_cgs_vec, "../python_project/cgs/time_cgs_vec.csv");
     write_vector_to_csv(&time_mgs_vec, "../python_project/mgs/time_mgs_vec.csv");
+    write_vector_to_csv(&time_mgs_H_vec, "../python_project/mgs/time_mgs_H_vec.csv");
     write_vector_to_csv(&time_lanczos_vec, "../python_project/lanczos/time_lanczos_vec.csv");
 
 }
 
 fn orchestrator() {
     // Set the number of Arnoldi iterations
-    let n = 50; // The number of iterations give the number of orthonormal columns
+    let n = 50; // The number of iterations give the number of orthonormal columns // 250
 
     // Define your matrix here
     let A = DMatrix::new_random(n, n);
 
-    // Choose a random initial vector for Arnoldi algorithm
-    let r0 = DVector::new_random(n);
+    let A_H = A.clone()+A.transpose();
 
-    let k_max = 45;
+    // Choose a random initial vector and normalize it
+    let mut r0 = DVector::new_random(n);
+    r0.normalize_mut();
+
+    let k_max = 45; // 200
 
     let k_vector: Vec<usize> = (2..=k_max).collect(); // k = Grade of the vector b
 
     let mut orthogonality_loss_gs_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_cgs_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_mgs_vec: Vec<f64> = Vec::new();
+    let mut orthogonality_loss_mgs_H_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_lanczos_vec: Vec<f64> = Vec::new();
 
     for k in &k_vector{
@@ -300,17 +269,21 @@ fn orchestrator() {
         let (V_mgs, H_mgs) = arnoldi_mg_iteration(&A, r0.clone(), *k);
         orthogonality_loss_mgs_vec.push(orthogonality_loss(&V_mgs));
 
+        // Arnoldi iteration Modified GS (Hermitian matrix)
+        let (V_mgs_H, H_mgs_H) = arnoldi_mg_iteration(&A_H, r0.clone(), *k);
+        orthogonality_loss_mgs_H_vec.push(orthogonality_loss(&V_mgs_H));
+
         // Arnoldi iteration Modified GS
-        let (V_lanczos, T_lanczos) = lanczos_iteration(&A, r0.clone(), *k);
+        let (V_lanczos, T_lanczos) = lanczos_iteration(&A_H, r0.clone(), *k);
         orthogonality_loss_lanczos_vec.push(orthogonality_loss(&V_lanczos));
         
         // Write orthogonality loss and time vectors to csv
-        write_orthogonality_vectors_to_csv(&orthogonality_loss_gs_vec, &orthogonality_loss_cgs_vec, &orthogonality_loss_mgs_vec, &orthogonality_loss_lanczos_vec);
+        write_orthogonality_vectors_to_csv(&orthogonality_loss_gs_vec, &orthogonality_loss_cgs_vec, &orthogonality_loss_mgs_vec, &orthogonality_loss_mgs_H_vec, &orthogonality_loss_lanczos_vec);
 
         // Write matrices to CSV files
         write_matrices_to_csv(&V_gs, &R_gs, &V_cgs, &H_cgs, &V_mgs, &H_mgs, &V_lanczos, &T_lanczos, *k);
 
-        println!("Are Lanczos columns for {} orthonormal? {:?}", k, are_columns_orthonormal(&V_lanczos));
+        //println!("Are Lanczos columns for {} orthonormal? {:?}", k, are_columns_orthonormal(&V_lanczos));
 
     } // End of k loop
 
@@ -329,7 +302,7 @@ fn orchestrator() {
     println!("{:?}", orthogonality_loss_lanczos_vec);
 
     // Compute and write averaged execution time: CAUTION! Long execution time
-    compute_time(&A, r0, k_max);
+    compute_time(&A, &A_H,r0, k_max);
 
 }
 

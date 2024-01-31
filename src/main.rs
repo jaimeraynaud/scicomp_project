@@ -146,14 +146,14 @@ fn write_matrix_to_csv(matrix: &DMatrix<f64>, filename: &str) -> Result<(), std:
 
 fn write_matrices_to_csv(V_gs: &DMatrix<f64>, R_gs: &DMatrix<f64>, V_cgs: &DMatrix<f64>, H_cgs: &DMatrix<f64>, V_mgs: &DMatrix<f64>, H_mgs: &DMatrix<f64>, V_lanczos: &DMatrix<f64>, T_lanczos: &DMatrix<f64>, k: usize) -> Result<(), std::io::Error> {
     
-    write_matrix_to_csv(V_gs, &format!("./python_visualization/gs/V/V_gs_{}.csv", k))?;
-    write_matrix_to_csv(R_gs, &format!("./python_visualization/gs/R/R_gs_{}.csv", k))?;
-    write_matrix_to_csv(V_cgs, &format!("./python_visualization/cgs/V/V_cgs_{}.csv", k))?;
-    write_matrix_to_csv(H_cgs, &format!("./python_visualization/cgs/H/H_cgs_{}.csv", k))?;
-    write_matrix_to_csv(V_mgs, &format!("./python_visualization/mgs/V/V_mgs_{}.csv", k))?;
-    write_matrix_to_csv(H_mgs, &format!("./python_visualization/mgs/H/H_mgs_{}.csv", k))?;
-    write_matrix_to_csv(V_lanczos, &format!("./python_visualization/lanczos/V/V_lanczos_{}.csv", k))?;
-    write_matrix_to_csv(T_lanczos, &format!("./python_visualization/lanczos/T/T_lanczos_{}.csv", k))?;
+    write_matrix_to_csv(V_gs, &format!("./python_visualizations/gs/V/V_gs_{}.csv", k))?;
+    write_matrix_to_csv(R_gs, &format!("./python_visualizations/gs/R/R_gs_{}.csv", k))?;
+    write_matrix_to_csv(V_cgs, &format!("./python_visualizations/cgs/V/V_cgs_{}.csv", k))?;
+    write_matrix_to_csv(H_cgs, &format!("./python_visualizations/cgs/H/H_cgs_{}.csv", k))?;
+    write_matrix_to_csv(V_mgs, &format!("./python_visualizations/mgs/V/V_mgs_{}.csv", k))?;
+    write_matrix_to_csv(H_mgs, &format!("./python_visualizations/mgs/H/H_mgs_{}.csv", k))?;
+    write_matrix_to_csv(V_lanczos, &format!("./python_visualizations/lanczos/V/V_lanczos_{}.csv", k))?;
+    write_matrix_to_csv(T_lanczos, &format!("./python_visualizations/lanczos/T/T_lanczos_{}.csv", k))?;
     Ok(())
 }
 
@@ -170,11 +170,11 @@ fn write_vector_to_csv(data: &Vec<f64>, file_path: &str) -> Result<(), Box<dyn E
 }
 
 fn write_orthogonality_vectors_to_csv(orthogonality_loss_gs_vec: &Vec<f64>, orthogonality_loss_cgs_vec: &Vec<f64>, orthogonality_loss_mgs_vec: &Vec<f64>, orthogonality_loss_mgs_H_vec: &Vec<f64>, orthogonality_loss_lanczos_vec: &Vec<f64>) -> Result<(), std::io::Error> {
-    write_vector_to_csv(orthogonality_loss_gs_vec, "./python_visualization/gs/orthogonality_loss_gs_vec.csv");
-    write_vector_to_csv(orthogonality_loss_cgs_vec, "./python_visualization/cgs/orthogonality_loss_cgs_vec.csv");
-    write_vector_to_csv(orthogonality_loss_mgs_vec, "./python_visualization/mgs/orthogonality_loss_mgs_vec.csv");
-    write_vector_to_csv(orthogonality_loss_mgs_H_vec, "./python_visualization/mgs/orthogonality_loss_mgs_H_vec.csv");
-    write_vector_to_csv(orthogonality_loss_lanczos_vec, "./python_visualization/lanczos/orthogonality_loss_lanczos_vec.csv");
+    write_vector_to_csv(orthogonality_loss_gs_vec, "./python_visualizations/gs/orthogonality_loss_gs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_cgs_vec, "./python_visualizations/cgs/orthogonality_loss_cgs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_mgs_vec, "./python_visualizations/mgs/orthogonality_loss_mgs_vec.csv");
+    write_vector_to_csv(orthogonality_loss_mgs_H_vec, "./python_visualizations/mgs/orthogonality_loss_mgs_H_vec.csv");
+    write_vector_to_csv(orthogonality_loss_lanczos_vec, "./python_visualizations/lanczos/orthogonality_loss_lanczos_vec.csv");
     Ok(())
 }
 
@@ -224,11 +224,11 @@ fn compute_time(A: &DMatrix<f64>, A_H: &DMatrix<f64>, r0: DVector<f64>, k_max: u
         time_lanczos_vec.push(averaged_time_lanczos.as_secs_f64());
     }
 
-    write_vector_to_csv(&time_gs_vec, "./python_visualization/gs/time_gs_vec.csv");
-    write_vector_to_csv(&time_cgs_vec, "./python_visualization/cgs/time_cgs_vec.csv");
-    write_vector_to_csv(&time_mgs_vec, "./python_visualization/mgs/time_mgs_vec.csv");
-    write_vector_to_csv(&time_mgs_H_vec, "./python_visualization/mgs/time_mgs_H_vec.csv");
-    write_vector_to_csv(&time_lanczos_vec, "./python_visualization/lanczos/time_lanczos_vec.csv");
+    write_vector_to_csv(&time_gs_vec, "./python_visualizations/gs/time_gs_vec.csv");
+    write_vector_to_csv(&time_cgs_vec, "./python_visualizations/cgs/time_cgs_vec.csv");
+    write_vector_to_csv(&time_mgs_vec, "./python_visualizations/mgs/time_mgs_vec.csv");
+    write_vector_to_csv(&time_mgs_H_vec, "./python_visualizations/mgs/time_mgs_H_vec.csv");
+    write_vector_to_csv(&time_lanczos_vec, "./python_visualizations/lanczos/time_lanczos_vec.csv");
 
 }
 
@@ -241,8 +241,8 @@ fn orchestrator() {
 
     let A_H = A.clone()+A.transpose();
 
-    write_matrix_to_csv(&A, &format!("./python_visualization/A.csv"));
-    write_matrix_to_csv(&A_H, &format!("./python_visualization/A_H.csv"));
+    write_matrix_to_csv(&A, &format!("./python_visualizations/A.csv"));
+    write_matrix_to_csv(&A_H, &format!("./python_visualizations/A_H.csv"));
 
     // Choose a random initial vector and normalize it
     let mut r0 = DVector::new_random(n);
@@ -250,7 +250,7 @@ fn orchestrator() {
 
     let k_max = 200; // 200
 
-    let k_vector: Vec<usize> = (2.=k_max).collect(); // k = Grade of the vector b
+    let k_vector: Vec<usize> = (2..=k_max).collect(); // k = Grade of the vector b
 
     let mut orthogonality_loss_gs_vec: Vec<f64> = Vec::new();
     let mut orthogonality_loss_cgs_vec: Vec<f64> = Vec::new();

@@ -41,7 +41,7 @@ def plot_orthogonality(vectors, output_file, labels, colors):
     plt.yscale('log')
     plt.legend(fontsize=10)
     plt.tight_layout()
-    plt.savefig(output_file)
+    plt.savefig("images/"+output_file)
     plt.show()
 
 def plot_execution_time(vectors, output_file, labels, colors, matlab=0):
@@ -59,7 +59,7 @@ def plot_execution_time(vectors, output_file, labels, colors, matlab=0):
     plt.ylabel('Execution time', fontsize=12)
     plt.legend(fontsize=10)
     plt.tight_layout()
-    plt.savefig(output_file)
+    plt.savefig("images/"+output_file)
     plt.show()
 
 def plot_sparse_matrix(path, label, color):
@@ -67,7 +67,7 @@ def plot_sparse_matrix(path, label, color):
     matrix = read_matrix_from_csv(path)
     plt.spy(matrix, markersize=3, precision=0.1, label=label, color=color)
     plt.tight_layout()
-    plt.savefig(f'sparse_matrix_{label.replace(" ", "_").lower()}.png')
+    plt.savefig("images/"+f'sparse_matrix_{label.replace(" ", "_").lower()}.png')
     plt.show()
 
 def main():

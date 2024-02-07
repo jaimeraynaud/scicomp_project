@@ -1,3 +1,5 @@
+import os
+
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
@@ -56,7 +58,7 @@ def plot_execution_time(vectors, output_file, labels, colors, matlab=0):
         vector_index+=1
 
     plt.xlabel('k', fontsize=12)
-    plt.ylabel('Execution time', fontsize=12)
+    plt.ylabel('Execution time (s)', fontsize=12)
     plt.legend(fontsize=10)
     plt.tight_layout()
     plt.savefig("images/"+output_file)
@@ -71,24 +73,33 @@ def plot_sparse_matrix(path, label, color):
     plt.show()
 
 def main():
-    orthogonality_loss_gs_file = 'python_visualizations/gs/orthogonality_loss_gs_vec.csv'  
-    orthogonality_loss_cgs_file = 'python_visualizations/cgs/orthogonality_loss_cgs_vec.csv'  
-    orthogonality_loss_mgs_file = 'python_visualizations/mgs/orthogonality_loss_mgs_vec.csv'
-    orthogonality_loss_mgs_H_file = 'python_visualizations/mgs/orthogonality_loss_mgs_H_vec.csv'
-    orthogonality_loss_lanczos_file = 'python_visualizations/lanczos/orthogonality_loss_lanczos_vec.csv'
+    
+    print("\n===============================================================================================================================\n")
+    print("Python visualizations of experimental results")
+    print("\n1. Matrix structures")
+    print("\n2. Orthogonality loss")
+    print("\n3. Runtime")
+    print("\n===============================================================================================================================\n")
 
-    time_gs_file = 'python_visualizations/gs/time_gs_vec.csv' 
-    time_cgs_file = 'python_visualizations/cgs/time_cgs_vec.csv'  
-    time_mgs_file = 'python_visualizations/mgs/time_mgs_vec.csv'
-    time_mgs_H_file = 'python_visualizations/mgs/time_mgs_H_vec.csv'
-    time_lanczos_file = 'python_visualizations/lanczos/time_lanczos_vec.csv'
-    time_mgs_H_file_matlab = 'python_visualizations/mgs/time_mgs_H_vec_matlab.csv'
-    time_lanczos_file_matlab = 'python_visualizations/lanczos/time_lanczos_vec_matlab.csv'
 
-    r_path_gs = 'python_visualizations/gs/R/R_gs_45.csv'
-    h_path_cgs = 'python_visualizations/cgs/H/H_cgs_45.csv' 
-    h_path_mgs = 'python_visualizations/mgs/H/H_mgs_45.csv'
-    t_path_lanczos = 'python_visualizations/lanczos/T/T_lanczos_45.csv'
+    orthogonality_loss_gs_file = 'experiment_results/gs/orthogonality_loss_gs_vec.csv'  
+    orthogonality_loss_cgs_file = 'experiment_results/cgs/orthogonality_loss_cgs_vec.csv'  
+    orthogonality_loss_mgs_file = 'experiment_results/mgs/orthogonality_loss_mgs_vec.csv'
+    orthogonality_loss_mgs_H_file = 'experiment_results/mgs/orthogonality_loss_mgs_H_vec.csv'
+    orthogonality_loss_lanczos_file = 'experiment_results/lanczos/orthogonality_loss_lanczos_vec.csv'
+
+    time_gs_file = 'experiment_results/gs/time_gs_vec.csv' 
+    time_cgs_file = 'experiment_results/cgs/time_cgs_vec.csv'  
+    time_mgs_file = 'experiment_results/mgs/time_mgs_vec.csv'
+    time_mgs_H_file = 'experiment_results/mgs/time_mgs_H_vec.csv'
+    time_lanczos_file = 'experiment_results/lanczos/time_lanczos_vec.csv'
+    time_mgs_H_file_matlab = 'experiment_results/mgs/time_mgs_H_vec_matlab.csv'
+    time_lanczos_file_matlab = 'experiment_results/lanczos/time_lanczos_vec_matlab.csv'
+
+    r_path_gs = 'experiment_results/gs/R/R_gs_12.csv'
+    h_path_cgs = 'experiment_results/cgs/H/H_cgs_12.csv' 
+    h_path_mgs = 'experiment_results/mgs/H/H_mgs_12.csv'
+    t_path_lanczos = 'experiment_results/lanczos/T/T_lanczos_12.csv'
 
     orthogonality_loss_gs_vec = read_vector_from_csv(orthogonality_loss_gs_file)
     orthogonality_loss_cgs_vec = read_vector_from_csv(orthogonality_loss_cgs_file)
@@ -126,5 +137,22 @@ def main():
     plot_sparse_matrix(h_path_mgs, 'Arnoldi MGS', colors_dict["dodgerblue"])
     plot_sparse_matrix(t_path_lanczos, 'Lanczos', colors_dict["dodgerblue"])
 
+def delete_files_in_folder(folder_path):
+    """
+    Deletes all files in a given nested folder.
+
+    Args:
+    - folder_path (str): The path to the folder.
+
+    Returns:
+    - None
+    """
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            os.remove(file_path)
+
 if __name__ == "__main__":
+    #delete_files_in_folder("experiment_results")
     main()
+

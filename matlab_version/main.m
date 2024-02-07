@@ -1,17 +1,47 @@
 clc; clear; close all;
 format compact
-n = 250;
-k = 200;
+
+disp("===========================================================================================================================");
+disp("Comparison of algorithms for computing orthonormal bases");
+disp("===========================================================================================================================", newline);
+
+n = 75;
+k = 70;
+
+disp("===========================================================================================================================");
+disp(['Initial values: n (size of the matrix) = ', num2str(n), ', k (dimension of the subspace) = ', num2str(k)]);
+disp("===========================================================================================================================", newline);
 
 %A = diag(1:n);
-A = randn(n,n) + 1i*randn(n,n);
-v = randn(length(A),1);
+% A = randn(n,n) + 1i*randn(n,n);
+% A_H = A+A';
+% v = randn(length(A),1);�
 
-compute_time(A, A+A', v, k);
-disp('Done!');
+% Reading a CSV file containing the matrix A
+A = readmatrix('../experiment_results/A.csv');
+A = A(:, 1:end-1);
+
+A_H = readmatrix('../experiment_results/A_H.csv');
+A_H = A_H(:, 1:end-1);
+
+% Reading a CSV file containing a vector
+v = readmatrix('../experiment_results/r0.csv');
+
+
+% Save matrix to CSV file
+% csvwrite('./python_visualizations/A.csv', A);
+% csvwrite('./python_visualizations/A_H.csv', A);
+
+% Save vector to CSV file
+% csvwrite('./python_visualizations/v.csv', v);
+disp("===========================================================================================================================");
+disp("Computing average runtime...");
+compute_time(A, A_H, v, k);
+disp("===========================================================================================================================", newline);
+disp("Finished");
 
 function averaged_duration = measure_avg_execution_time(f)
-    num_iterations = 10; % Change here to modify the number of iterations to average the results.
+    num_iterations = 2; % Change here to modify the number of iterations to average the results.
     
     total_duration = 0;
 
@@ -52,16 +82,16 @@ function compute_time(A, A_H, v, k_max)
         time_lanczos_vec = [time_lanczos_vec, averaged_time_lanczos];
     end
     
-    csvwrite('../python_visualizations/gs/time_gs_vec_matlab.csv', time_gs_vec);
-    csvwrite('../python_visualizations/cgs/time_cgs_vec_matlab.csv', time_cgs_vec);
-    csvwrite('../python_visualizations/mgs/time_mgs_vec_matlab.csv', time_mgs_vec);
-    csvwrite('../python_visualizations/mgs/time_mgs_H_vec_matlab.csv', time_mgs_H_vec);
-    csvwrite('../python_visualizations/lanczos/time_lanczos_vec_matlab.csv', time_lanczos_vec);
+    csvwrite('../experiment_results/gs/time_gs_vec_matlab.csv', time_gs_vec);
+    csvwrite('../experiment_results/cgs/time_cgs_vec_matlab.csv', time_cgs_vec);
+    csvwrite('../experiment_results/mgs/time_mgs_vec_matlab.csv', time_mgs_vec);
+    csvwrite('../experiment_results/mgs/time_mgs_H_vec_matlab.csv', time_mgs_H_vec);
+    csvwrite('../experiment_results/lanczos/time_lanczos_vec_matlab.csv', time_lanczos_vec);
     
 end
  
 
-% GramSchmidt for orthonormal Krylov subspace basis
+% Gram-Schmidt for orthonormal Krylov subspace basis
 function [V,H]=qr_krylov(A,v,k)
 n = length(A);  
 V = zeros(n,k+1); 
@@ -79,7 +109,7 @@ for j=1:k
 end
 end
 
-% Arnoldi algorithm - classical GramSchmidt variant (Algorithm 5)
+% Arnoldi algorithm - classical Gram-Schmidt variant
 function [V,H]=cgsarnoldi(A,v,k)
 n = length(A); 
 V = zeros(n,k+1); 
@@ -117,7 +147,7 @@ for j=1:k
 end
 end
 
-% Lanczos method (Algorithm 7)
+% Lanczos algorithm
 function [V,T] = lanczos(A,v,k)
 V = zeros(length(A),k+1); V(:,1) = v/norm(v,2);
 T = zeros(k+1,k);

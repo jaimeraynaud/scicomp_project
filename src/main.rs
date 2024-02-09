@@ -30,25 +30,6 @@ fn gs_iteration(A: &DMatrix<f64>, mut v: DVector<f64>, k: usize) -> (DMatrix<f64
     return (V, H);
 }
 
-// fn arnoldi_cg_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
-//     let mut H = DMatrix::zeros(n+1, n);
-//     let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
-
-//     V.column_mut(0).copy_from(&r0.unscale(r0.norm()));
-
-//     for k in 1..n+1 {
-//         let mut v_ = A * &V.column(k - 1);  // Generate a new candidate vector
-//         for i in 0..k {
-//             H[(i, k - 1)] = (A * &V.column(k - 1)).conjugate().dot(&V.column(i));
-//             v_ = v_ - H[(i, k - 1)]*&V.column(i);
-//         }  // Subtract the projections on previous vectors
-//         H[(k, k-1)] = v_.norm();
-//         V.set_column(k, &(v_ / H[(k, k-1)]));
-//     }
-            
-//     return (V, H);
-// }
-
 fn arnoldi_cg_iteration(A: &DMatrix<f64>, mut v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>){
     let n = A.ncols();
     
@@ -65,8 +46,8 @@ fn arnoldi_cg_iteration(A: &DMatrix<f64>, mut v: DVector<f64>, k: usize) -> (DMa
             vtilde = vtilde - H[(i,j-1)]*&V.column(i);
         }
             
-        H[(j-1,j-1)] = vtilde.norm();
-        V.set_column(j, &(vtilde/H[(j-1,j-1)]));
+        H[(j,j-1)] = vtilde.norm();
+        V.set_column(j, &(vtilde/H[(j,j-1)]));
     }
     return (V, H);
 }
@@ -95,28 +76,6 @@ fn arnoldi_mg_iteration(A: &DMatrix<f64>, v: DVector<f64>, k: usize) -> (DMatrix
             
     return (V, H);
 }
-
-// fn arnoldi_mg_iteration(A: &DMatrix<f64>, v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>) {
-//     let n = A.ncols();
-
-//     let mut V = DMatrix::zeros(n, k+1);
-//     let mut H = DMatrix::zeros(k+1, k);
-    
-//     V.column_mut(0).copy_from(&v.unscale(v.norm()));
-
-//     for j in 1..k+1 {
-//         let mut v_: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Const<1>, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Const<1>>> = A * &V.column(j - 1);  // Generate a new candidate vector
-//         for i in 0..j {
-//             H[(i, j - 1)] = V.column(j).conjugate().dot(&v_);
-//             v_ = v_ - H[(i, j - 1)] * V.column(i);
-//         }  // Subtract the projections on previous vectors
-//         H[(j, j-1)] = v_.norm();
-//         V.set_column(k, &(v_ / H[(j, j-1)])); //Right now the only difference is here
-//     }
-            
-//     return (V, H);
-// }
-
 
 fn lanczos_iteration(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, DMatrix<f64>) {
     let mut H = DMatrix::zeros(n+1, n);

@@ -25,7 +25,7 @@ In case you would like to reproduce our results or make a quick run to test the 
   
 3. **Python code:**
       - inside `scicomp_project`, access `python_visualizations` folder and open the file `main.py`
-      - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end which indicates the dimension matrices you want to visualize (R, H and T), this number needs to be less or equal than **k_max**. For our results, we set it as **k_max** then, for example, the file will be like that `R_gs_200.csv`
+      - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end, which indicates the dimension of the matrices you want to visualize (R, H and T), this number needs to be less or equal than **k_max**. For our results, we set it as **k_max** then, for example, the file will be like that `R_gs_200.csv`
 
 ## 1. Executing Rust Code
 

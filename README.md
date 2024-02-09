@@ -1,7 +1,31 @@
 # Scientific Computing Final Project Setup and Execution Guide
 
-Welcome to our project. This document outlines the steps necessary to execute our Rust code, run the Matlab scripts for file generation, and how to visualize the data using a Python script. Moreover, it furnishes the instructions to modify the three parameters (n, k and t) on the different files to test the code with a quicker run. 
+Welcome to our project. This document outlines the steps necessary to execute our Rust code, run the Matlab scripts for file generation, and how to visualize the data using a Python script. Moreover, it furnishes the instructions to modify the three parameters (**n**, **k_max** and **nums**) on the different files to test the code for different setups. 
 Please follow the instructions carefully to ensure a smooth setup and execution process.
+
+## 0. How to modify the parameters
+
+In case you would like to reproduce our results or make a quick run to test the code, here is what you should modify and on which files. At first, the three essential parameters for the execution are
+   - **n:** size of the initial random matrix
+   - **k_max:** dimension of the Krylov subspace, always less than n
+   - **nums:** number of iterations on which measure the average runtime execution
+
+### Steps:
+
+1. **Rust code:**
+      - inside `scicomp_project`, access `src` folder and open the file `main.rs`
+      - go to line 43 and 44, here you can change **n** and **k_max**. To reproduce our results set respectively 250 and 200 as values
+      - still inside `src` folder, open the file `algo_analysis.rs`
+      - go to line 23, here you can change **nums**. To reproduce our results set 10 as value
+
+2. **MATLAB code:**
+      - inside `scicomp_project`, access `matlab_version` folder and open the file `main.m`
+      - go to line 10 and 11, here you can change **n** and **k**. To reproduce our results set respectively 250 and 200 as values
+      - go to line 33, here you can change **num_iterations**. To reproduce our results set 10 as value
+  
+3. **Python code:**
+      - inside `scicomp_project`, access `python_visualizations` folder and open the file `main.py`
+      - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end which indicates the dimension of the initial matrix, i.e. what you set as **n** in the previous steps. For our results **n**=250 then for instance the file will be like that `R_gs_250.csv`
 
 ## 1. Executing Rust Code
 

@@ -1,24 +1,14 @@
+# Python code to visualize our experimental results.
+
+
 import os
 from visualization import plot_orthogonality, plot_execution_time, plot_sparse_matrix
 from data_handling import read_vector_from_csv, read_vector_from_row_csv
 from matplotlib import colors as mcolors
 
+
+
 colors_dict = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-
-def delete_files_in_folder(folder_path):
-    """
-    Deletes all files in a given nested folder.
-
-    Args:
-    - folder_path (str): The path to the folder.
-
-    Returns:
-    - None
-    """
-    for root, _, files in os.walk(folder_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            os.remove(file_path)
 
 def main():
     
@@ -109,6 +99,6 @@ def delete_files_in_folder(folder_path):
             os.remove(file_path)
 
 if __name__ == "__main__":
-    #delete_files_in_folder("experiment_results")
+    # delete_files_in_folder("experiment_results")
     main()
 

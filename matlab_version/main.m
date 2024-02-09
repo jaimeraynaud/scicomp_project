@@ -1,21 +1,18 @@
 clc; clear; close all;
 format compact
 
+% MATLAB implementation analogous to our Rust implementation.
+
 disp("===========================================================================================================================");
 disp("Comparison of algorithms for computing orthonormal bases");
 disp("===========================================================================================================================", newline);
 
-n = 75;
-k = 70;
+n = 75; % (Set to 250 for replicating our experiments) Size of the initial matrix A (n > k)
+k = 70; % (Set to 200 for replicating our experiments) (n > k)
 
 disp("===========================================================================================================================");
 disp(['Initial values: n (size of the matrix) = ', num2str(n), ', k (dimension of the subspace) = ', num2str(k)]);
 disp("===========================================================================================================================", newline);
-
-%A = diag(1:n);
-% A = randn(n,n) + 1i*randn(n,n);
-% A_H = A+A';
-% v = randn(length(A),1);�
 
 % Reading a CSV file containing the matrix A
 A = readmatrix('../experiment_results/A.csv');
@@ -24,16 +21,8 @@ A = A(:, 1:end-1);
 A_H = readmatrix('../experiment_results/A_H.csv');
 A_H = A_H(:, 1:end-1);
 
-% Reading a CSV file containing a vector
 v = readmatrix('../experiment_results/r0.csv');
 
-
-% Save matrix to CSV file
-% csvwrite('./python_visualizations/A.csv', A);
-% csvwrite('./python_visualizations/A_H.csv', A);
-
-% Save vector to CSV file
-% csvwrite('./python_visualizations/v.csv', v);
 disp("===========================================================================================================================");
 disp("Computing average runtime...");
 compute_time(A, A_H, v, k);
@@ -41,7 +30,7 @@ disp("==========================================================================
 disp("Finished");
 
 function averaged_duration = measure_avg_execution_time(f)
-    num_iterations = 2; % Change here to modify the number of iterations to average the results.
+    num_iterations = 2; % (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
     
     total_duration = 0;
 
@@ -66,16 +55,16 @@ function compute_time(A, A_H, v, k_max)
 
     for k = k_vector
         disp(['Iteration: ', num2str(k), '/', num2str(k_max)]);
-        averaged_time_gs = measure_avg_execution_time(@( ) qr_krylov(A, v, k));
+        averaged_time_gs = measure_avg_execution_time(@( ) gs(A, v, k));
         time_gs_vec = [time_gs_vec, averaged_time_gs];
 
-        averaged_time_cgs = measure_avg_execution_time(@( ) cgsarnoldi(A, v, k));
+        averaged_time_cgs = measure_avg_execution_time(@( ) arnoldi_cgs(A, v, k));
         time_cgs_vec = [time_cgs_vec, averaged_time_cgs];
 
-        averaged_time_mgs = measure_avg_execution_time(@( ) mgsarnoldi(A, v, k));
+        averaged_time_mgs = measure_avg_execution_time(@( ) arnoldi_mgs(A, v, k));
         time_mgs_vec = [time_mgs_vec, averaged_time_mgs];
 
-        averaged_time_mgs_H = measure_avg_execution_time(@( ) mgsarnoldi(A_H, v, k));
+        averaged_time_mgs_H = measure_avg_execution_time(@( ) arnoldi_mgs(A_H, v, k));
         time_mgs_H_vec = [time_mgs_H_vec, averaged_time_mgs_H];
 
         averaged_time_lanczos = measure_avg_execution_time(@( ) lanczos(A_H, v, k));
@@ -92,7 +81,7 @@ end
  
 
 % Gram-Schmidt for orthonormal Krylov subspace basis
-function [V,H]=qr_krylov(A,v,k)
+function [V,H]=gs(A,v,k)
 n = length(A);  
 V = zeros(n,k+1); 
 V(:,1) = v/norm(v);
@@ -110,7 +99,7 @@ end
 end
 
 % Arnoldi algorithm - classical Gram-Schmidt variant
-function [V,H]=cgsarnoldi(A,v,k)
+function [V,H]=arnoldi_cgs(A,v,k)
 n = length(A); 
 V = zeros(n,k+1); 
 V(:,1) = v/norm(v);
@@ -127,7 +116,7 @@ for j=1:k
 end
 end
 
-function [V,H]=mgsarnoldi(A,v,k)
+function [V,H]=arnoldi_mgs(A,v,k)
 n = length(A); 
 V = zeros(n,k+1); 
 V(:,1) = v/norm(v);

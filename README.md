@@ -60,7 +60,7 @@ In case you would like to reproduce our results or test the code for different p
   
 3. **Python code:**
       - inside `scicomp_project`, access `python_visualizations` folder and open the file `main.py`
-      - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end, which indicates the dimension of the matrices you want to visualize (R, H and T), this number needs to be less than `k_max`. For our results, we set it as `k_max` then, for example, the file will be like that `R_gs_200.csv`
+      - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end, which indicates the dimension of the matrices you want to visualize (R, H and T), this number needs to be less than `k_max`. For our results, we set it at 50 then, for example, the file will be like that `R_gs_50.csv`
 
 ## Conclusion
 

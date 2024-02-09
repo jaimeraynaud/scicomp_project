@@ -1,6 +1,6 @@
 # Scientific Computing Final Project Setup and Execution Guide
 
-Welcome to our project. This document outlines the steps necessary to execute our Rust code, run the Matlab scripts for file generation, and how to visualize the data using a Python script. Moreover, it furnishes the instructions to modify the three parameters (**n**, **k_max** and **nums**) on the different files to test the code for different setups. 
+Welcome to our project. This document outlines the steps necessary to execute our Rust code, run the Matlab scripts for file generation, and how to visualize the data using a Python script. Moreover, it furnishes the instructions to modify the three parameters (**n**, **k_max** and **num_iterations**) on the different files to test the code for different setups. 
 Please follow the instructions carefully to ensure a smooth setup and execution process.
 
 ## 1. Executing Rust Code

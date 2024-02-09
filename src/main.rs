@@ -13,6 +13,7 @@ Technische Universität Berlin
 mod algorithms;
 mod algo_analysis;
 mod csv_handler;
+mod functionality;
 
 use nalgebra::{DMatrix, DVector, Vector};
 
@@ -22,6 +23,7 @@ fn orchestrator() {
     Orchestrates the comparison of algorithms for computing orthonormal bases in Rust.
 
     This function performs the following steps:
+    0. Deletes the output csv and images of previous executions
     1. Initializes the matrices and vectors.
     2. Computes orthonormal bases using various algorithms.
     3. Calculates orthogonality loss for each algorithm.
@@ -33,6 +35,23 @@ fn orchestrator() {
     Returns:
     - None
     */
+    // Specify the path to the nested folder
+    let csv_path = "experiment_results";
+
+    // Call the function to delete files in the nested folder
+    match functionality::delete_files_in_folder(csv_path) {
+        Ok(_) => println!("All outputs of previous runs have been deleted successfully."),
+        Err(err) => eprintln!("Error: {}", err),
+    }
+
+    // Specify the path to the nested folder
+    let images_path = "images";
+
+    // Call the function to delete files in the nested folder
+    match functionality::delete_files_in_folder(images_path) {
+        Ok(_) => println!("All outputs of previous runs have been deleted successfully."),
+        Err(err) => eprintln!("Error: {}", err),
+    }
 
     println!("\n===========================================================================================================================");
     println!("Comparison of algorithms for computing orthonormal bases in Rust");

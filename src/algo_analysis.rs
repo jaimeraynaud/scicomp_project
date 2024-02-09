@@ -20,16 +20,16 @@ where
     - Duration: Average execution time.
     */
 
-    let nums = 2; // (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
+    let num_iterations = 2; // (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
     let mut total_duration = Duration::from_secs(0);
 
-    for iter in 0..nums {
+    for iter in 0..num_iterations {
         let start_time = Instant::now();
         f();
         let end_time = Instant::now();
         total_duration += end_time - start_time;
     }
-    let averaged_duration = total_duration / nums as u32;
+    let averaged_duration = total_duration / num_iterations as u32;
     return averaged_duration
 }
 

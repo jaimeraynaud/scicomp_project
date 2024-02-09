@@ -8,10 +8,10 @@ disp("Comparison of algorithms for computing orthonormal bases");
 disp("===========================================================================================================================", newline);
 
 n = 75; % (Set to 250 for replicating our experiments) Size of the initial matrix A (n > k)
-k = 70; % (Set to 200 for replicating our experiments) (n > k)
+k_max = 70; % (Set to 200 for replicating our experiments) (n > k)
 
 disp("===========================================================================================================================");
-disp(['Initial values: n (size of the matrix) = ', num2str(n), ', k (dimension of the subspace) = ', num2str(k)]);
+disp(['Initial values: n (size of the matrix) = ', num2str(n), ', k (dimension of the subspace) = ', num2str(k_max)]);
 disp("===========================================================================================================================", newline);
 
 % Reading a CSV file containing the matrix A
@@ -25,7 +25,7 @@ v = readmatrix('../experiment_results/r0.csv');
 
 disp("===========================================================================================================================");
 disp("Computing average runtime...");
-compute_time(A, A_H, v, k);
+compute_time(A, A_H, v, k_max);
 disp("===========================================================================================================================", newline);
 disp("Finished");
 

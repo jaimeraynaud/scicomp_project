@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 /**
 Scientific Computing project: Comparison of Algorithms for Computing Orthonormal Bases
 
@@ -7,8 +9,6 @@ Dagur Oskarsson (492256)
 
 Technische Universität Berlin
 */
-
-#![allow(warnings)]
 
 mod algorithms;
 mod algo_analysis;

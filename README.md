@@ -9,12 +9,12 @@ To begin with, you will need to execute the Rust code located in the `src` folde
 
 ### Steps:
 
-1. **Navigate to the `src` Folder:**
-   - **Option 1:** Open your terminal. Use the `cd` command to change directories until you are inside the `src` folder of our project.
-   - **Option 2:** Alternatively, navigate to the `src` folder, then right-click in the folder and select the option to open a terminal or command prompt window directly in that location.
+1. **Navigate to the project Folder `scicomp_project`:**
+   - **Option 1:** Open your terminal. Use the `cd` command to change directories until you are inside the `scicomp_project` folder of our project.
+   - **Option 2:** Alternatively, navigate to the `scicomp_project` folder, then right-click in the folder and select the option to open a terminal or command prompt window directly in that location.
 
 2. **Run the Rust Code:**
-   - In the terminal window that is now open in the `src` folder, type the following command and press Enter:
+   - In the terminal window that is now open in the `scicomp_project` folder, type the following command and press Enter:
      ```shell
      cargo run
      ```
@@ -26,7 +26,7 @@ After you have successfully executed the Rust code, the next step is to run the 
 
 ### Steps:
 
-Open Matlab and execute the Matlab script file provided in the `matlab_version` folder . If you do not have Matlab installed on your computer, you can use Matlab Online to run the script.
+Open Matlab and execute the Matlab script file provided in the `matlab_version` folder. If you do not have Matlab installed on your computer, you can use Matlab Online to run the script.
 
 ## 3. Visualizing Data with Python
 

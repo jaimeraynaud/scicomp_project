@@ -1,3 +1,13 @@
+/**
+Scientific Computing project: Comparison of Algorithms for Computing Orthonormal Bases
+
+Samuel Aliprandi (492247)
+Jaime Raynaud (492252)
+Dagur Oskarsson (492256)
+
+Technische Universität Berlin
+*/
+
 #![allow(warnings)]
 
 mod algorithms;

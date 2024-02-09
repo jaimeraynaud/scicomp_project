@@ -100,5 +100,7 @@ def delete_files_in_folder(folder_path):
 
 if __name__ == "__main__":
     # delete_files_in_folder("experiment_results")
+    # delete_files_in_folder("images")
+
     main()
 

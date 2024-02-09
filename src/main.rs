@@ -17,7 +17,6 @@ mod csv_handler;
 use nalgebra::{DMatrix, DVector, Vector};
 
 
-
 fn orchestrator() {
     /**
     Orchestrates the comparison of algorithms for computing orthonormal bases in Rust.

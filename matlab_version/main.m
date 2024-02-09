@@ -16,10 +16,10 @@ disp("==========================================================================
 
 % Reading a CSV file containing the matrix A
 A = readmatrix('../experiment_results/A.csv');
-A = A(:, 1:end-1);
+A = A(:, 1:end-1); % (Uncomment for older versions of MATLAB)
 
 A_H = readmatrix('../experiment_results/A_H.csv');
-A_H = A_H(:, 1:end-1);
+A_H = A_H(:, 1:end-1); % (Uncomment for older versions of MATLAB)
 
 v = readmatrix('../experiment_results/r0.csv');
 

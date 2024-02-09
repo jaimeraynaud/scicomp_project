@@ -1,7 +1,6 @@
 use nalgebra::{DMatrix, DVector, Vector};
 
 
-
 pub fn gs(A: &DMatrix<f64>, mut v: DVector<f64>, k: usize) -> (DMatrix<f64>, DMatrix<f64>){
     /**
     Performs the Gram-Schmidt orthogonalization process.
@@ -118,7 +117,7 @@ pub fn lanczos(A: &DMatrix<f64>, r0: DVector<f64>, n: usize) -> (DMatrix<f64>, D
     Returns:
     - (DMatrix<f64>, DMatrix<f64>): Tuple containing the orthogonalized matrix V and the upper Hessenberg matrix H.
     */
-    
+
     let mut H = DMatrix::zeros(n+1, n);
     let mut V: nalgebra::Matrix<f64, nalgebra::Dyn, nalgebra::Dyn, nalgebra::VecStorage<f64, nalgebra::Dyn, nalgebra::Dyn>> = DMatrix::zeros(A.nrows(), n+1);
 

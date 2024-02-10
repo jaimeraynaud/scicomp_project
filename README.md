@@ -49,13 +49,13 @@ In case you would like to reproduce our results or test the code for different p
 
 1. **Rust code:**
       - inside `scicomp_project`, access `src` folder and open the file `main.rs`
-      - go to line 43 and 44, here you can change `n` and `k_max`. To reproduce our results set respectively 250 and 200 as values
+      - go to line 43 and 44, here you can change `n` and `k_max`. To reproduce our results set respectively 150 and 100 as values
       - still inside `src` folder, open the file `algo_analysis.rs`
       - go to line 23, here you can change `num_iterations`. To reproduce our results set 10 as value
 
 2. **MATLAB code:**
       - inside `scicomp_project`, access `matlab_version` folder and open the file `main.m`
-      - go to line 10 and 11, here you can change `n` and `k_max`. To reproduce our results set respectively 250 and 200 as values
+      - go to line 10 and 11, here you can change `n` and `k_max`. To reproduce our results set respectively 150 and 100 as values
       - go to line 33, here you can change `num_iterations`. To reproduce our results set 10 as value
   
 3. **Python code:**

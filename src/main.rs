@@ -58,8 +58,8 @@ fn orchestrator() {
     println!("===========================================================================================================================\n");
 
     // Set the number of Arnoldi iterations
-    let n = 75; // (Set to 250 for replicating our experiments) Size of the initial matrix A (n > k_max)
-    let k_max = 70; // (Set to 200 for replicating our experiments) (n > k_max)
+    let n = 75; // (Set to 150 for replicating our experiments) Size of the initial matrix A (n > k_max)
+    let k_max = 70; // (Set to 100 for replicating our experiments) (n > k_max)
 
 
     println!("===========================================================================================================================");

@@ -20,7 +20,7 @@ where
     - Duration: Average execution time.
     */
 
-    let num_iterations = 2; // (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
+    let num_iterations = 3; // (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
     let mut total_duration = Duration::from_secs(0);
 
     for iter in 0..num_iterations {

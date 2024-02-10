@@ -30,7 +30,7 @@ disp("==========================================================================
 disp("Finished");
 
 function averaged_duration = measure_avg_execution_time(f)
-    num_iterations = 3; % (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
+    num_iterations = 2; % (Set to 10 for replicating our experiments) Change here to modify the number of iterations to average the results.
     
     total_duration = 0;
 

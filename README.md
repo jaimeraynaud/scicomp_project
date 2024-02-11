@@ -1,4 +1,5 @@
-# Scientific Computing Final Project Setup and Execution Guide
+# 21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3
+## Scientific Computing Final Project Setup and Execution Guide
 
 Welcome to our project. This document outlines the steps necessary to execute our Rust code, run the Matlab scripts for file generation, and how to visualize the data using a Python script. Moreover, it furnishes the instructions to modify the three parameters (`n`, `k_max` and `num_iterations`) on the different files to test the code for different setups. 
 Please follow the instructions carefully to ensure a smooth setup and execution process.
@@ -9,12 +10,12 @@ To begin with, you will need to execute the Rust code located in the `src` folde
 
 ### Steps:
 
-1. **Navigate to the project Folder `scicomp_project`:**
-   - **Option 1:** Open your terminal. Use the `cd` command to change directories until you are inside the `scicomp_project` folder of our project.
-   - **Option 2:** Alternatively, navigate to the `scicomp_project` folder, then right-click in the folder and select the option to open a terminal or command prompt window directly in that location.
+1. **Navigate to the project Folder `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3`:**
+   - **Option 1:** Open your terminal. Use the `cd` command to change directories until you are inside the `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3` folder of our project.
+   - **Option 2:** Alternatively, navigate to the `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3` folder, then right-click in the folder and select the option to open a terminal or command prompt window directly in that location.
 
 2. **Run the Rust Code:**
-   - In the terminal window that is now open in the `scicomp_project` folder, type the following command and press Enter:
+   - In the terminal window that is now open in the `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3` folder, type the following command and press Enter:
      ```shell
      cargo run
      ```
@@ -48,18 +49,18 @@ In case you would like to reproduce our results or test the code for different p
 ### Steps:
 
 1. **Rust code:**
-      - inside `scicomp_project`, access `src` folder and open the file `main.rs`
+      - inside `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3`, access `src` folder and open the file `main.rs`
       - go to line 43 and 44, here you can change `n` and `k_max`. To reproduce our results set respectively 150 and 100 as values
       - still inside `src` folder, open the file `algo_analysis.rs`
       - go to line 23, here you can change `num_iterations`. To reproduce our results set 10 as value
 
 2. **MATLAB code:**
-      - inside `scicomp_project`, access `matlab_version` folder and open the file `main.m`
+      - inside `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3`, access `matlab_version` folder and open the file `main.m`
       - go to line 10 and 11, here you can change `n` and `k_max`. To reproduce our results set respectively 150 and 100 as values
       - go to line 33, here you can change `num_iterations`. To reproduce our results set 10 as value
   
 3. **Python code:**
-      - inside `scicomp_project`, access `python_visualizations` folder and open the file `main.py`
+      - inside `21-20-Algorithms-to-compute-an-orthonormal-basis-comparison-3`, access `python_visualizations` folder and open the file `main.py`
       - go to line 41, 42, 43 and 44, here for each `.csv` file change the number in the end, which indicates the dimension of the matrices you want to visualize (R, H and T), this number needs to be less than `k_max`. For our results, we set it at 50 then, for example, the file will be like that `R_gs_50.csv`
 
 ## Conclusion
